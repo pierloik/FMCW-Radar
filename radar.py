@@ -15,7 +15,6 @@ FILENAME = ""
 FOLDER = ".\\data\\raw\\"
 BETAS = [0,-67/180*np.pi] #phase calibration
 R0 = 2.5 # range calibration
-LOG = True
 N = 256
 M = 256
 
@@ -116,20 +115,6 @@ def remove_0freq(ant):
     return ant
 antenna1 = remove_0freq(antenna1)
 antenna2 = remove_0freq(antenna2)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -340,44 +325,6 @@ def compute_corrfilter(size, corrfiltertype, Ms, Mc, N):
         fltr[size//2, size//2] = 1
     return fltr
 
-def global_nearest_neighbor(previous_positions, current_positions, threshold):
-    """
-    Perform global nearest neighbor association between previous and current positions.
-
-    Args:
-        previous_positions: N x 2 array of previous positions.
-        current_positions: M x 2 array of current positions.
-        threshold: Maximum distance between previous and current positions for association.
-
-    Returns:
-        associations: List of length M with the index of the associated previous position (-1 for no association).
-    """
-    num_previous = previous_positions.shape[0]
-    num_current = current_positions.shape[0]
-    cost_matrix = np.zeros((num_previous, num_current))
-
-    # Compute pairwise Euclidean distances between previous and current positions
-    for i in range(num_previous):
-        for j in range(num_current):
-            cost_matrix[i, j] = np.linalg.norm(previous_positions[i] - current_positions[j])
-
-    associations = np.full(num_current, -1, dtype=int)  # Initialize all associations to -1
-
-    # Greedy matching: find the closest unassigned current position for each previous position
-    for i in range(num_previous):
-        j = np.argmin(cost_matrix[i, :])
-        if cost_matrix[i, j] <= threshold:
-            if associations[j] == -1:
-                associations[j] = i
-            else:
-                # If multiple current positions are assigned to the same previous position,
-                # keep the one with the closest distance
-                current_distance = cost_matrix[i, j]
-                previous_distance = np.linalg.norm(previous_positions[associations[j]] - current_positions[j])
-                if current_distance < previous_distance:
-                    associations[j] = i
-
-    return associations.tolist()
 
 def print_target_infos(target_infos, ntgt):
         print('         Target :',end='\t')
